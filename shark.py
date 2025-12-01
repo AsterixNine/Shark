@@ -966,7 +966,7 @@ class Shark:
     
     def clear_screen(self):
         """Limpa a tela"""
-        if SYSTEM == 'windows':
+        if SYSTEM == 'windows': 
             os.system('cls')
         else:
             os.system('clear')
@@ -1000,15 +1000,17 @@ class Shark:
 {Colors.DIM}  Terminal: {TERMINAL} | Sistema: {SYSTEM}{Colors.RESET}
 {Colors.CYAN}═══════════════════════════════════════════════════════════{Colors.RESET}
 
-  {Colors.hex("#00BFFF")}[1]{Colors.RESET} 🎨 Temas e Cores
-  {Colors.hex("#00BFFF")}[2]{Colors.RESET} 🖼️  Banners (incluindo personalizados)
-  {Colors.hex("#00BFFF")}[3]{Colors.RESET} 💻 Configurar Prompt
-  {Colors.hex("#00BFFF")}[4]{Colors.RESET} 📊 Barras de Progresso
-  {Colors.hex("#00BFFF")}[5]{Colors.RESET} ✨ Animações e Efeitos
-  {Colors.hex("#00BFFF")}[6]{Colors.RESET} 🔒 Segurança (Senha)
-  {Colors.hex("#00BFFF")}[7]{Colors.RESET} ⚙️  Configurações
-  {Colors.hex("#00BFFF")}[8]{Colors.RESET} 🎬 Demo Completo
-  {Colors.hex("#00BFFF")}[0]{Colors.RESET} 🚪 Sair
+  {Colors.hex("#00BFFF")}[1]{Colors.RESET} Temas e Cores
+  {Colors.hex("#00BFFF")}[2]{Colors.RESET} Banners (incluindo personalizados)
+  {Colors.hex("#00BFFF")}[3]{Colors.RESET} Configurar Prompt
+  {Colors.hex("#00BFFF")}[4]{Colors.RESET} Barras de Progresso
+  {Colors.hex("#00BFFF")}[5]{Colors.RESET} Animacoes e Efeitos
+  {Colors.hex("#00BFFF")}[6]{Colors.RESET} Seguranca (Senha)
+  {Colors.hex("#00BFFF")}[7]{Colors.RESET} Configuracoes
+  {Colors.hex("#00BFFF")}[8]{Colors.RESET} Demo Completo
+  {Colors.hex("#FF6B6B")}[I]{Colors.RESET} INSTALAR no Terminal (permanente)
+  {Colors.hex("#00FF88")}[U]{Colors.RESET} Atualizar Shark (GitHub)
+  {Colors.hex("#00BFFF")}[0]{Colors.RESET} Sair
 
 {Colors.CYAN}═══════════════════════════════════════════════════════════{Colors.RESET}
 """
@@ -1026,6 +1028,8 @@ class Shark:
                 "6": self.security_menu,
                 "7": self.config_menu,
                 "8": self.full_demo,
+                "i": self.install_menu,
+                "u": self.update_menu,
                 "0": self.exit_shark,
             }
             
@@ -1446,18 +1450,810 @@ class Shark:
         input("\n  Pressione Enter para continuar...")
         self.interactive_menu()
     
+    def update_menu(self):
+        """Menu de atualizacao do Shark"""
+        self.clear_screen()
+        print(f"\n{Colors.BOLD}  Atualizar Shark{Colors.RESET}\n")
+        
+        print(f"  {Colors.CYAN}Verificando atualizacoes...{Colors.RESET}\n")
+        
+        # Verifica se existe o updater
+        updater_path = Path(__file__).parent / "shark_update.py"
+        
+        if not updater_path.exists():
+            print(f"  {Colors.RED}[X] shark_update.py nao encontrado{Colors.RESET}")
+            print(f"  {Colors.DIM}Baixe do repositorio GitHub{Colors.RESET}")
+            input("\n  Pressione Enter para continuar...")
+            self.interactive_menu()
+            return
+        
+        # Verifica versao
+        shark_dir = Path(__file__).parent
+        has_git = (shark_dir / ".git").exists()
+        
+        print(f"  Diretorio: {Colors.DIM}{shark_dir}{Colors.RESET}")
+        print(f"  Git:       {Colors.GREEN if has_git else Colors.YELLOW}{'Sim' if has_git else 'Nao'}{Colors.RESET}")
+        
+        # Tenta obter versao remota
+        try:
+            from urllib.request import urlopen, Request
+            import json as json_module
+            
+            # Configuracao do repositorio (mesma do shark_update.py)
+            github_user = "seuusuario"
+            github_repo = "shark"
+            
+            api_url = f"https://api.github.com/repos/{github_user}/{github_repo}/releases/latest"
+            req = Request(api_url, headers={'User-Agent': 'Shark'})
+            
+            with urlopen(req, timeout=5) as response:
+                data = json_module.loads(response.read().decode())
+                remote_version = data.get('tag_name', 'N/A').lstrip('v')
+                print(f"  Versao remota: {Colors.GREEN}{remote_version}{Colors.RESET}")
+        except:
+            print(f"  Versao remota: {Colors.YELLOW}Nao foi possivel verificar{Colors.RESET}")
+        
+        print(f"""
+  [1] Atualizar agora
+  [2] Verificar atualizacoes
+  [3] Forcar atualizacao
+  [0] Voltar
+""")
+        
+        choice = input(f"  {Colors.hex('#00FF88')}Escolha:{Colors.RESET} ").strip()
+        
+        if choice == "0":
+            self.interactive_menu()
+            return
+        
+        # Executa o updater
+        import subprocess
+        
+        if choice == "1":
+            subprocess.run([sys.executable, str(updater_path)])
+        elif choice == "2":
+            subprocess.run([sys.executable, str(updater_path), "check"])
+        elif choice == "3":
+            subprocess.run([sys.executable, str(updater_path), "force"])
+        
+        input("\n  Pressione Enter para continuar...")
+        self.interactive_menu()
+    
+    def install_menu(self):
+        """Menu de instalacao no terminal"""
+        self.clear_screen()
+        print(f"\n{Colors.BOLD}  INSTALAR no Terminal{Colors.RESET}\n")
+        
+        # Verifica status atual
+        installed = ShellIntegration.check_installation()
+        
+        print(f"  {Colors.CYAN}Status atual:{Colors.RESET}\n")
+        for shell, is_installed in installed.items():
+            status = f"{Colors.GREEN}Instalado{Colors.RESET}" if is_installed else f"{Colors.DIM}Nao instalado{Colors.RESET}"
+            print(f"  {shell}: {status}")
+        
+        print(f"""
+  {Colors.YELLOW}O que a instalacao faz:{Colors.RESET}
+  - Exibe banner ao abrir qualquer terminal
+  - Substitui prompt padrao pelo Shark
+  - Adiciona comandos: shark, shark-banner, shark-matrix
+  
+  [1] Instalar no terminal
+  [2] Remover do terminal
+  [0] Voltar
+""")
+        
+        choice = input(f"  {Colors.hex('#00FF88')}Escolha:{Colors.RESET} ").strip()
+        
+        if choice == "1":
+            print(f"\n  {Colors.CYAN}Instalando...{Colors.RESET}\n")
+            results = ShellIntegration.install_all()
+            for shell, result in results.items():
+                if "Erro" in str(result):
+                    print(f"  {Colors.RED}[X] {shell}: {result}{Colors.RESET}")
+                else:
+                    print(f"  {Colors.GREEN}[V] {shell}: Instalado{Colors.RESET}")
+            print(f"\n  {Colors.GREEN}Feche e abra o terminal para ver as mudancas!{Colors.RESET}")
+        elif choice == "2":
+            print(f"\n  {Colors.CYAN}Removendo...{Colors.RESET}\n")
+            results = ShellIntegration.uninstall_all()
+            for shell, success in results.items():
+                if success:
+                    print(f"  {Colors.GREEN}[V] {shell}: Removido{Colors.RESET}")
+                else:
+                    print(f"  {Colors.DIM}[-] {shell}: Nao estava instalado{Colors.RESET}")
+            print(f"\n  {Colors.GREEN}Shark removido. Reinicie o terminal.{Colors.RESET}")
+        
+        input("\n  Pressione Enter para continuar...")
+        self.interactive_menu()
+    
     def exit_shark(self):
         """Sai do Shark"""
-        self.print_colored("\n  🦈 Até mais! Shark out! 🌊\n", "#00BFFF")
+        self.print_colored("\n  Ate mais! Shark out!\n", "#00BFFF")
         sys.exit(0)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# FUNÇÃO PRINCIPAL
+# SISTEMA DE INSTALACAO - INTEGRA COM SHELLS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class ShellIntegration:
+    """Integra Shark com shells do sistema - fica PERMANENTE"""
+    
+    # Caminho do script shark.py
+    SHARK_SCRIPT = Path(__file__).resolve()
+    
+    # ═══════════════════════════════════════════════════════════════════════════
+    # POWERSHELL
+    # ═══════════════════════════════════════════════════════════════════════════
+    
+    @staticmethod
+    def get_powershell_profile_path():
+        """Retorna caminho do profile do PowerShell"""
+        # PowerShell Core (pwsh)
+        ps_core = Path.home() / "Documents" / "PowerShell" / "Microsoft.PowerShell_profile.ps1"
+        # Windows PowerShell
+        ps_win = Path.home() / "Documents" / "WindowsPowerShell" / "Microsoft.PowerShell_profile.ps1"
+        
+        # Prefere PowerShell Core se existir o diretorio
+        if ps_core.parent.exists():
+            return ps_core
+        return ps_win
+    
+    @staticmethod
+    def generate_powershell_profile():
+        """Gera codigo para PowerShell profile"""
+        shark_path = str(ShellIntegration.SHARK_SCRIPT).replace("\\", "/")
+        
+        return f'''
+# ═══════════════════════════════════════════════════════════════════════════════
+# SHARK - Terminal Customization System
+# Instalado automaticamente pelo Shark
+# Para remover: python "{shark_path}" uninstall
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Habilita cores ANSI
+$env:TERM = "xterm-256color"
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
+# Funcao para obter prompt do Shark
+function Get-SharkPrompt {{
+    $output = python "{shark_path}" prompt 2>$null
+    if ($output) {{ return $output }}
+    return "PS> "
+}}
+
+# Exibe banner ao iniciar
+python "{shark_path}" banner
+
+# Sobrescreve o prompt padrao
+function prompt {{
+    $sharkPrompt = Get-SharkPrompt
+    return $sharkPrompt
+}}
+
+# Aliases uteis do Shark
+function shark {{ python "{shark_path}" $args }}
+function shark-banner {{ python "{shark_path}" banner }}
+function shark-matrix {{ python "{shark_path}" matrix }}
+function shark-rainbow {{ python "{shark_path}" rainbow $args }}
+
+# Define titulo do terminal
+$Host.UI.RawUI.WindowTitle = "Shark Terminal"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# FIM SHARK
+# ═══════════════════════════════════════════════════════════════════════════════
+'''
+    
+    @staticmethod
+    def install_powershell():
+        """Instala no PowerShell"""
+        profile_path = ShellIntegration.get_powershell_profile_path()
+        shark_code = ShellIntegration.generate_powershell_profile()
+        marker_start = "# SHARK - Terminal Customization System"
+        marker_end = "# FIM SHARK"
+        
+        # Cria diretorio se nao existir
+        profile_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Le profile existente
+        existing_content = ""
+        if profile_path.exists():
+            existing_content = profile_path.read_text(encoding='utf-8')
+        
+        # Remove instalacao anterior se existir
+        if marker_start in existing_content:
+            lines = existing_content.split('\n')
+            new_lines = []
+            skip = False
+            for line in lines:
+                if marker_start in line:
+                    skip = True
+                elif marker_end in line:
+                    skip = False
+                    continue
+                if not skip:
+                    new_lines.append(line)
+            existing_content = '\n'.join(new_lines).strip()
+        
+        # Adiciona codigo do Shark
+        new_content = existing_content + "\n" + shark_code
+        profile_path.write_text(new_content, encoding='utf-8')
+        
+        return profile_path
+    
+    @staticmethod
+    def uninstall_powershell():
+        """Remove do PowerShell"""
+        profile_path = ShellIntegration.get_powershell_profile_path()
+        marker_start = "# SHARK - Terminal Customization System"
+        marker_end = "# FIM SHARK"
+        
+        if not profile_path.exists():
+            return False
+        
+        content = profile_path.read_text(encoding='utf-8')
+        
+        if marker_start not in content:
+            return False
+        
+        lines = content.split('\n')
+        new_lines = []
+        skip = False
+        for line in lines:
+            if marker_start in line:
+                skip = True
+            elif marker_end in line:
+                skip = False
+                continue
+            if not skip:
+                new_lines.append(line)
+        
+        new_content = '\n'.join(new_lines).strip()
+        profile_path.write_text(new_content, encoding='utf-8')
+        
+        return True
+    
+    # ═══════════════════════════════════════════════════════════════════════════
+    # BASH
+    # ═══════════════════════════════════════════════════════════════════════════
+    
+    @staticmethod
+    def get_bash_profile_path():
+        """Retorna caminho do .bashrc"""
+        bashrc = Path.home() / ".bashrc"
+        bash_profile = Path.home() / ".bash_profile"
+        
+        # Prefere .bashrc
+        if bashrc.exists():
+            return bashrc
+        return bash_profile if bash_profile.exists() else bashrc
+    
+    @staticmethod
+    def generate_bash_profile():
+        """Gera codigo para Bash"""
+        shark_path = str(ShellIntegration.SHARK_SCRIPT)
+        
+        return f'''
+# ═══════════════════════════════════════════════════════════════════════════════
+# SHARK - Terminal Customization System
+# Instalado automaticamente pelo Shark
+# Para remover: python3 "{shark_path}" uninstall
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Habilita cores
+export TERM="xterm-256color"
+export FORCE_COLOR=1
+
+# Funcao para prompt do Shark
+shark_prompt() {{
+    python3 "{shark_path}" prompt 2>/dev/null
+}}
+
+# Exibe banner ao iniciar
+python3 "{shark_path}" banner
+
+# Sobrescreve PS1
+export PS1='$(shark_prompt)'
+
+# Aliases
+alias shark='python3 "{shark_path}"'
+alias shark-banner='python3 "{shark_path}" banner'
+alias shark-matrix='python3 "{shark_path}" matrix'
+shark-rainbow() {{ python3 "{shark_path}" rainbow "$@"; }}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# FIM SHARK
+# ═══════════════════════════════════════════════════════════════════════════════
+'''
+    
+    @staticmethod
+    def install_bash():
+        """Instala no Bash"""
+        profile_path = ShellIntegration.get_bash_profile_path()
+        shark_code = ShellIntegration.generate_bash_profile()
+        marker_start = "# SHARK - Terminal Customization System"
+        marker_end = "# FIM SHARK"
+        
+        existing_content = ""
+        if profile_path.exists():
+            existing_content = profile_path.read_text(encoding='utf-8')
+        
+        # Remove instalacao anterior
+        if marker_start in existing_content:
+            lines = existing_content.split('\n')
+            new_lines = []
+            skip = False
+            for line in lines:
+                if marker_start in line:
+                    skip = True
+                elif marker_end in line:
+                    skip = False
+                    continue
+                if not skip:
+                    new_lines.append(line)
+            existing_content = '\n'.join(new_lines).strip()
+        
+        new_content = existing_content + "\n" + shark_code
+        profile_path.write_text(new_content, encoding='utf-8')
+        
+        return profile_path
+    
+    @staticmethod
+    def uninstall_bash():
+        """Remove do Bash"""
+        profile_path = ShellIntegration.get_bash_profile_path()
+        marker_start = "# SHARK - Terminal Customization System"
+        marker_end = "# FIM SHARK"
+        
+        if not profile_path.exists():
+            return False
+        
+        content = profile_path.read_text(encoding='utf-8')
+        
+        if marker_start not in content:
+            return False
+        
+        lines = content.split('\n')
+        new_lines = []
+        skip = False
+        for line in lines:
+            if marker_start in line:
+                skip = True
+            elif marker_end in line:
+                skip = False
+                continue
+            if not skip:
+                new_lines.append(line)
+        
+        new_content = '\n'.join(new_lines).strip()
+        profile_path.write_text(new_content, encoding='utf-8')
+        
+        return True
+    
+    # ═══════════════════════════════════════════════════════════════════════════
+    # ZSH
+    # ═══════════════════════════════════════════════════════════════════════════
+    
+    @staticmethod
+    def get_zsh_profile_path():
+        """Retorna caminho do .zshrc"""
+        return Path.home() / ".zshrc"
+    
+    @staticmethod
+    def generate_zsh_profile():
+        """Gera codigo para Zsh"""
+        shark_path = str(ShellIntegration.SHARK_SCRIPT)
+        
+        return f'''
+# ═══════════════════════════════════════════════════════════════════════════════
+# SHARK - Terminal Customization System
+# Instalado automaticamente pelo Shark
+# Para remover: python3 "{shark_path}" uninstall
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Habilita cores
+export TERM="xterm-256color"
+export FORCE_COLOR=1
+
+# Funcao para prompt do Shark
+shark_prompt() {{
+    python3 "{shark_path}" prompt 2>/dev/null
+}}
+
+# Exibe banner ao iniciar
+python3 "{shark_path}" banner
+
+# Sobrescreve PROMPT
+setopt PROMPT_SUBST
+export PROMPT='$(shark_prompt)'
+
+# Aliases
+alias shark='python3 "{shark_path}"'
+alias shark-banner='python3 "{shark_path}" banner'
+alias shark-matrix='python3 "{shark_path}" matrix'
+shark-rainbow() {{ python3 "{shark_path}" rainbow "$@"; }}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# FIM SHARK
+# ═══════════════════════════════════════════════════════════════════════════════
+'''
+    
+    @staticmethod
+    def install_zsh():
+        """Instala no Zsh"""
+        profile_path = ShellIntegration.get_zsh_profile_path()
+        shark_code = ShellIntegration.generate_zsh_profile()
+        marker_start = "# SHARK - Terminal Customization System"
+        marker_end = "# FIM SHARK"
+        
+        existing_content = ""
+        if profile_path.exists():
+            existing_content = profile_path.read_text(encoding='utf-8')
+        
+        if marker_start in existing_content:
+            lines = existing_content.split('\n')
+            new_lines = []
+            skip = False
+            for line in lines:
+                if marker_start in line:
+                    skip = True
+                elif marker_end in line:
+                    skip = False
+                    continue
+                if not skip:
+                    new_lines.append(line)
+            existing_content = '\n'.join(new_lines).strip()
+        
+        new_content = existing_content + "\n" + shark_code
+        profile_path.write_text(new_content, encoding='utf-8')
+        
+        return profile_path
+    
+    @staticmethod
+    def uninstall_zsh():
+        """Remove do Zsh"""
+        profile_path = ShellIntegration.get_zsh_profile_path()
+        marker_start = "# SHARK - Terminal Customization System"
+        marker_end = "# FIM SHARK"
+        
+        if not profile_path.exists():
+            return False
+        
+        content = profile_path.read_text(encoding='utf-8')
+        
+        if marker_start not in content:
+            return False
+        
+        lines = content.split('\n')
+        new_lines = []
+        skip = False
+        for line in lines:
+            if marker_start in line:
+                skip = True
+            elif marker_end in line:
+                skip = False
+                continue
+            if not skip:
+                new_lines.append(line)
+        
+        new_content = '\n'.join(new_lines).strip()
+        profile_path.write_text(new_content, encoding='utf-8')
+        
+        return True
+    
+    # ═══════════════════════════════════════════════════════════════════════════
+    # CMD (Windows) - via AutoRun no Registro
+    # ═══════════════════════════════════════════════════════════════════════════
+    
+    @staticmethod
+    def generate_cmd_script():
+        """Gera script batch para CMD"""
+        shark_path = str(ShellIntegration.SHARK_SCRIPT)
+        script_path = CONFIG_DIR / "shark_autorun.bat"
+        
+        content = f'''@echo off
+REM SHARK - Terminal Customization System
+python "{shark_path}" banner
+doskey shark=python "{shark_path}" $*
+doskey shark-banner=python "{shark_path}" banner
+doskey shark-matrix=python "{shark_path}" matrix
+title Shark Terminal
+'''
+        
+        CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+        script_path.write_text(content, encoding='utf-8')
+        return script_path
+    
+    @staticmethod
+    def install_cmd():
+        """Instala no CMD via registro"""
+        if SYSTEM != 'windows':
+            return None
+        
+        try:
+            import winreg
+            
+            script_path = ShellIntegration.generate_cmd_script()
+            
+            # Abre/cria chave do registro
+            key_path = r"Software\Microsoft\Command Processor"
+            key = winreg.CreateKey(winreg.HKEY_CURRENT_USER, key_path)
+            
+            # Define AutoRun
+            winreg.SetValueEx(key, "AutoRun", 0, winreg.REG_SZ, str(script_path))
+            winreg.CloseKey(key)
+            
+            return script_path
+        except Exception as e:
+            return None
+    
+    @staticmethod
+    def uninstall_cmd():
+        """Remove do CMD"""
+        if SYSTEM != 'windows':
+            return False
+        
+        try:
+            import winreg
+            
+            key_path = r"Software\Microsoft\Command Processor"
+            key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path, 0, winreg.KEY_ALL_ACCESS)
+            
+            try:
+                winreg.DeleteValue(key, "AutoRun")
+            except FileNotFoundError:
+                pass
+            
+            winreg.CloseKey(key)
+            
+            # Remove script
+            script_path = CONFIG_DIR / "shark_autorun.bat"
+            if script_path.exists():
+                script_path.unlink()
+            
+            return True
+        except Exception:
+            return False
+    
+    # ═══════════════════════════════════════════════════════════════════════════
+    # TERMUX
+    # ═══════════════════════════════════════════════════════════════════════════
+    
+    @staticmethod
+    def install_termux():
+        """Instala no Termux"""
+        return ShellIntegration.install_bash()
+    
+    @staticmethod
+    def uninstall_termux():
+        """Remove do Termux"""
+        return ShellIntegration.uninstall_bash()
+    
+    # ═══════════════════════════════════════════════════════════════════════════
+    # INSTALACAO AUTOMATICA
+    # ═══════════════════════════════════════════════════════════════════════════
+    
+    @staticmethod
+    def install_all():
+        """Instala em todos os shells disponiveis"""
+        results = {}
+        
+        if SYSTEM == 'windows':
+            # PowerShell
+            try:
+                path = ShellIntegration.install_powershell()
+                results['PowerShell'] = str(path)
+            except Exception as e:
+                results['PowerShell'] = f"Erro: {e}"
+            
+            # CMD
+            try:
+                path = ShellIntegration.install_cmd()
+                results['CMD'] = str(path) if path else "Erro ao instalar"
+            except Exception as e:
+                results['CMD'] = f"Erro: {e}"
+        else:
+            # Bash
+            try:
+                path = ShellIntegration.install_bash()
+                results['Bash'] = str(path)
+            except Exception as e:
+                results['Bash'] = f"Erro: {e}"
+            
+            # Zsh (se existir)
+            zshrc = Path.home() / ".zshrc"
+            if zshrc.exists() or (Path.home() / ".oh-my-zsh").exists():
+                try:
+                    path = ShellIntegration.install_zsh()
+                    results['Zsh'] = str(path)
+                except Exception as e:
+                    results['Zsh'] = f"Erro: {e}"
+        
+        return results
+    
+    @staticmethod
+    def uninstall_all():
+        """Remove de todos os shells"""
+        results = {}
+        
+        if SYSTEM == 'windows':
+            results['PowerShell'] = ShellIntegration.uninstall_powershell()
+            results['CMD'] = ShellIntegration.uninstall_cmd()
+        else:
+            results['Bash'] = ShellIntegration.uninstall_bash()
+            results['Zsh'] = ShellIntegration.uninstall_zsh()
+        
+        return results
+    
+    @staticmethod
+    def check_installation():
+        """Verifica onde o Shark esta instalado"""
+        installed = {}
+        marker = "# SHARK - Terminal Customization System"
+        
+        if SYSTEM == 'windows':
+            # PowerShell
+            ps_profile = ShellIntegration.get_powershell_profile_path()
+            if ps_profile.exists():
+                content = ps_profile.read_text(encoding='utf-8')
+                installed['PowerShell'] = marker in content
+            else:
+                installed['PowerShell'] = False
+            
+            # CMD
+            try:
+                import winreg
+                key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Command Processor")
+                try:
+                    value, _ = winreg.QueryValueEx(key, "AutoRun")
+                    installed['CMD'] = "shark" in value.lower()
+                except FileNotFoundError:
+                    installed['CMD'] = False
+                winreg.CloseKey(key)
+            except:
+                installed['CMD'] = False
+        else:
+            # Bash
+            bashrc = ShellIntegration.get_bash_profile_path()
+            if bashrc.exists():
+                content = bashrc.read_text(encoding='utf-8')
+                installed['Bash'] = marker in content
+            else:
+                installed['Bash'] = False
+            
+            # Zsh
+            zshrc = ShellIntegration.get_zsh_profile_path()
+            if zshrc.exists():
+                content = zshrc.read_text(encoding='utf-8')
+                installed['Zsh'] = marker in content
+            else:
+                installed['Zsh'] = False
+        
+        return installed
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# FUNCOES DE INSTALACAO CLI
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def install_shark():
+    """Instala Shark no terminal - fica PERMANENTE"""
+    print(f"""
+{Colors.CYAN}{'='*60}{Colors.RESET}
+{Colors.BOLD}  SHARK - Instalacao no Terminal{Colors.RESET}
+{Colors.CYAN}{'='*60}{Colors.RESET}
+""")
+    
+    print(f"  {Colors.YELLOW}Isso vai:{Colors.RESET}")
+    print(f"  - Exibir o banner ao abrir o terminal")
+    print(f"  - Substituir o prompt padrao pelo do Shark")
+    print(f"  - Adicionar comandos: shark, shark-banner, shark-matrix")
+    print()
+    
+    confirm = input(f"  {Colors.hex('#00FF88')}Continuar? (s/n):{Colors.RESET} ").strip().lower()
+    
+    if confirm != 's':
+        print(f"\n  {Colors.YELLOW}Instalacao cancelada.{Colors.RESET}\n")
+        return
+    
+    print(f"\n  {Colors.CYAN}Instalando...{Colors.RESET}\n")
+    
+    results = ShellIntegration.install_all()
+    
+    for shell, result in results.items():
+        if "Erro" in str(result):
+            print(f"  {Colors.RED}[X] {shell}: {result}{Colors.RESET}")
+        else:
+            print(f"  {Colors.GREEN}[V] {shell}: {result}{Colors.RESET}")
+    
+    print(f"""
+{Colors.GREEN}{'='*60}{Colors.RESET}
+  Instalacao concluida!
+  
+  {Colors.BOLD}Proximo passo:{Colors.RESET}
+  Feche e abra o terminal novamente para ver as mudancas.
+  
+  {Colors.DIM}Para remover: python shark.py uninstall{Colors.RESET}
+{Colors.GREEN}{'='*60}{Colors.RESET}
+""")
+
+
+def uninstall_shark():
+    """Remove Shark do terminal"""
+    print(f"""
+{Colors.CYAN}{'='*60}{Colors.RESET}
+{Colors.BOLD}  SHARK - Remover do Terminal{Colors.RESET}
+{Colors.CYAN}{'='*60}{Colors.RESET}
+""")
+    
+    confirm = input(f"  {Colors.hex('#FF6B6B')}Remover Shark do terminal? (s/n):{Colors.RESET} ").strip().lower()
+    
+    if confirm != 's':
+        print(f"\n  {Colors.YELLOW}Operacao cancelada.{Colors.RESET}\n")
+        return
+    
+    print(f"\n  {Colors.CYAN}Removendo...{Colors.RESET}\n")
+    
+    results = ShellIntegration.uninstall_all()
+    
+    for shell, success in results.items():
+        if success:
+            print(f"  {Colors.GREEN}[V] {shell}: Removido{Colors.RESET}")
+        else:
+            print(f"  {Colors.DIM}[-] {shell}: Nao estava instalado{Colors.RESET}")
+    
+    print(f"""
+{Colors.GREEN}{'='*60}{Colors.RESET}
+  Shark removido do terminal.
+  Feche e abra o terminal para restaurar o padrao.
+{Colors.GREEN}{'='*60}{Colors.RESET}
+""")
+
+
+def check_status():
+    """Verifica status da instalacao"""
+    print(f"""
+{Colors.CYAN}{'='*60}{Colors.RESET}
+{Colors.BOLD}  SHARK - Status da Instalacao{Colors.RESET}
+{Colors.CYAN}{'='*60}{Colors.RESET}
+""")
+    
+    installed = ShellIntegration.check_installation()
+    
+    for shell, is_installed in installed.items():
+        if is_installed:
+            print(f"  {Colors.GREEN}[V] {shell}: Instalado{Colors.RESET}")
+        else:
+            print(f"  {Colors.DIM}[-] {shell}: Nao instalado{Colors.RESET}")
+    
+    print(f"""
+  {Colors.DIM}Script: {ShellIntegration.SHARK_SCRIPT}{Colors.RESET}
+  {Colors.DIM}Config: {CONFIG_FILE}{Colors.RESET}
+""")
+
+
+def run_updater():
+    """Executa o atualizador"""
+    import subprocess
+    
+    updater_path = Path(__file__).parent / "shark_update.py"
+    
+    if not updater_path.exists():
+        print(f"{Colors.RED}[X] shark_update.py nao encontrado{Colors.RESET}")
+        print(f"{Colors.DIM}Baixe do repositorio GitHub{Colors.RESET}")
+        return
+    
+    subprocess.run([sys.executable, str(updater_path)])
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# FUNCAO PRINCIPAL
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def main():
-    """Função principal"""
+    """Funcao principal"""
     shark = Shark()
     
     # Verifica autenticação
@@ -1477,23 +2273,31 @@ def main():
             "matrix": lambda: Animations.matrix_rain(duration=10),
             "rainbow": lambda: print(Colors.rainbow(" ".join(sys.argv[2:]) if len(sys.argv) > 2 else "SHARK")),
             "typing": lambda: Animations.typing_effect(" ".join(sys.argv[2:]) if len(sys.argv) > 2 else "Hello Shark!"),
+            "install": lambda: install_shark(),
+            "uninstall": lambda: uninstall_shark(),
+            "status": lambda: check_status(),
+            "update": lambda: run_updater(),
         }
         
         if cmd in commands:
             commands[cmd]()
         elif cmd in ("--help", "-h", "help"):
             print(f"""
-{Colors.CYAN}🦈 SHARK - Sistema de Personalização TOTAL{Colors.RESET}
+{Colors.CYAN}SHARK - Sistema de Personalizacao TOTAL{Colors.RESET}
 
 {Colors.BOLD}Uso:{Colors.RESET}
   python shark.py              Abre o menu interativo
+  python shark.py install      INSTALA no terminal (permanente)
+  python shark.py uninstall    Remove do terminal
+  python shark.py status       Verifica instalacao
+  python shark.py update       Atualiza via GitHub
   python shark.py banner       Exibe o banner
   python shark.py prompt       Exibe o prompt customizado
   python shark.py colors       Demo de cores
   python shark.py matrix       Efeito Matrix Rain
-  python shark.py rainbow [texto]  Texto com arco-íris
-  python shark.py typing [texto]   Efeito digitação
-  python shark.py config       Mostra configuração
+  python shark.py rainbow [texto]  Texto com arco-iris
+  python shark.py typing [texto]   Efeito digitacao
+  python shark.py config       Mostra configuracao
 
 {Colors.BOLD}Terminal:{Colors.RESET} {TERMINAL}
 {Colors.BOLD}Sistema:{Colors.RESET} {SYSTEM}
